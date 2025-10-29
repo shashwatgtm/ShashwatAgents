@@ -43,6 +43,27 @@ export const setupMCPServer = (): McpServer => {
 
   // Register a tool specifically for testing the ability
   // to resume notification streams to the client
+  server.prompt(
+    "farewell-template",
+    "A simple farewell prompt template",
+    {
+      name: z.string().describe("Name to include in farewell"),
+    },
+    async ({ name }): Promise<GetPromptResult> => {
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `Please say goodbye to ${name} in a friendly manner.`,
+            },
+          },
+        ],
+      };
+    }
+  );
+
   server.tool(
     "start-notification-stream",
     "Starts sending periodic notifications for testing resumability",

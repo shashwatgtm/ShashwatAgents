@@ -16,6 +16,8 @@ This site shows a very a basic example of developing and running serverless MCP 
 - [Docs: Netlify Functions](https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-mcp-express)
 - [Agent Experience (AX)](https://agentexperience.ax?utm_source=express-mcp-guide&utm_medium=web&utm_content=example-mcp-express)
 
+This example also includes a `/health` endpoint for monitoring the server's status and a "farewell" prompt in addition to the "greeting" prompt.
+
 Importantly, because of how Express handles mapping routes, ensure you set the `netlify.toml` redirects to the correct path. In this example we have the following to ensure <domain>/mcp catches all of the requests to this server:
 
 ```toml
