@@ -6,8 +6,6 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/f15f03f9-55d8-4adc-97d5-f6e085141610/deploy-status)](https://app.netlify.com/sites/mcp-example-express/deploys)
 
-
-
 ## About this example site
 
 This site shows a very a basic example of developing and running serverless MCP using Netlify Functions. It includes links to a deployed serverless function and an example of accessing the function using a customized URL.
@@ -16,9 +14,17 @@ This site shows a very a basic example of developing and running serverless MCP 
 - [Docs: Netlify Functions](https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-mcp-express)
 - [Agent Experience (AX)](https://agentexperience.ax?utm_source=express-mcp-guide&utm_medium=web&utm_content=example-mcp-express)
 
-## Multi-Step "Account Research & Outreach" Workflow
+## "Corporate Intelligence" Workflow
 
-This example now includes an advanced, multi-step B2B outreach workflow inspired by the Gemini Cookbook. It chains multiple prompts together to perform research, identify a target persona, and then generate highly personalized outreach content.
+This example now includes a powerful, single-call "Corporate Intelligence" workflow. This workflow takes a company's domain as input, crawls the website for relevant pages (case studies, press releases, etc.), and then returns a structured JSON object containing a deep analysis of the company's value proposition, reasons to believe, jobs to be done, and ABM triggers.
+
+**Workflow:**
+
+1.  **`corporate_intelligence_report` prompt:** Use this prompt with a company's domain to get a comprehensive, AI-powered corporate intelligence report.
+
+## Multi-Step "Account Research & Outreach" Workflow (Legacy)
+
+This example also includes a legacy, multi-step B2B outreach workflow inspired by the Gemini Cookbook. It chains multiple prompts together to perform research, identify a target persona, and then generate highly personalized outreach content.
 
 **Workflow:**
 
@@ -37,8 +43,6 @@ Importantly, because of how Express handles mapping routes, ensure you set the `
   to = "/.netlify/functions/express-mcp-server"
 ```
 
-
-
 ## Speedily deploy your own version
 
 Deploy your own version of this example site, by clicking the Deploy to Netlify Button below. This will automatically:
@@ -50,7 +54,6 @@ Deploy your own version of this example site, by clicking the Deploy to Netlify 
 - This repo can then be used to iterate on locally using `netlify dev`
 
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/netlify/examples/&create_from_path=examples/mcp/express-mcp&utm_campaign=dx-examples)
-
 
 ## Install and run the examples locally
 
@@ -74,5 +77,3 @@ netlify dev
 npx @modelcontextprotocol/inspector npx mcp-remote@next http://localhost:8888/mcp
 
 ```
-
-

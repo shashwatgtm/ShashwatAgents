@@ -5,6 +5,9 @@
     "author": "Netlify",
     "type": "module",
     "license": "ISC",
+    "scripts": {
+        "test": "vitest"
+    },
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.20.2",
         "@netlify/functions": "^5.0.1",
@@ -15,5 +18,9 @@
         "fetch-to-node": "^2.1.0",
         "serverless-http": "^4.0.0",
         "zod": "^4.1.12"
+    },
+    "devDependencies": {
+        "ts-node": "^10.9.2",
+        "vitest": "^4.0.5"
     }
 }

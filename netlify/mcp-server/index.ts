@@ -8,6 +8,40 @@ import {
   ReadResourceResult,
 } from "@modelcontextprotocol/sdk/types.js";
 
+export const summarizeB2bEvidenceHandler = async ({ crawledContent }): Promise<GetPromptResult> => {
+  const PROMPT = `
+    **Objective:** Analyze the provided corporate texts (case studies, press releases, etc.) and extract key B2B intelligence.
+
+    **Crawled Content:**
+    ${crawledContent}
+
+    **Instructions:**
+    Analyze the text and extract the following information. Respond with ONLY a valid JSON object.
+    - **valueProposition:** What is the core value proposition offered to their customers?
+    - **reasonsToBelieve:** What specific evidence, results, or customer quotes support their claims?
+    - **jobsToBeDone:** What are the underlying "jobs to be done" that their customers are hiring their product for?
+    - **abmTriggers:** Are there any recent events like new funding, product launches, or executive hires that could be used as triggers for outreach?
+
+    **JSON Output Format:**
+    {
+      "valueProposition": "...",
+      "reasonsToBelieve": ["...", "..."],
+      "jobsToBeDone": ["...", "..."],
+      "abmTriggers": ["...", "..."]
+    }
+  `;
+  return {
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: PROMPT,
+        },
+      },
+    ],
+  };
+};
 
 export const setupMCPServer = (): McpServer => {
 
@@ -45,6 +79,57 @@ export const setupMCPServer = (): McpServer => {
 
   // Register a tool specifically for testing the ability
   // to resume notification streams to the client
+  server.prompt(
+    "summarize_b2b_evidence",
+    "Summarizes B2B evidence from crawled website content",
+    {
+      crawledContent: z
+        .string()
+        .describe(
+          "The combined text content from the crawled pages (case studies, press releases, etc.)"
+        ),
+    },
+    summarizeB2bEvidenceHandler
+  );
+
+  server.prompt(
+    "corporate_intelligence_report",
+    "Generates a corporate intelligence report for a given domain",
+    {
+      domain: z.string().url().describe("The domain of the company to research"),
+    },
+    async ({ domain }): Promise<GetPromptResult> => {
+      const keywords = ['case-study', 'press-release', 'news', 'blog', 'customer-stories'];
+      try {
+        const cleanText = await findAndScrape(domain, keywords);
+
+        if (!cleanText) {
+          return {
+            messages: [{ role: "assistant", content: { type: "text", text: `Could not find any relevant content on ${domain} for keywords: ${keywords.join(', ')}` } }],
+          };
+        }
+
+        // Step 2: Summarize the evidence
+        return summarizeB2bEvidenceHandler({ crawledContent: cleanText });
+      } catch (error) {
+        return {
+          messages: [{ role: "assistant", content: { type: "text", text: `Error crawling website: ${error.message}` } }],
+        };
+      }
+    }
+  );
+
+      if (!cleanText) {
+          return {
+              messages: [{ role: "assistant", content: { type: "text", text: `Could not find any relevant content on ${domain} for keywords: ${keywords.join(', ')}` } }],
+          };
+      }
+
+      // Step 2: Summarize the evidence
+      return summarizeB2bEvidenceHandler({ crawledContent: cleanText });
+    }
+  );
+
   server.prompt(
     "identify-target-persona",
     "Identifies the best target persona based on structured company data",
@@ -198,6 +283,78 @@ export const setupMCPServer = (): McpServer => {
           },
         ],
       };
+    }
+  );
+
+const findAndScrape = async (domain: string, keywords: string[]): Promise<string> => {
+  const { data: homepageHtml } = await axios.get(domain);
+  const $ = load(homepageHtml);
+  const allLinks = $("a")
+    .map((i, el) => $(el).attr("href"))
+    .get();
+
+  const targetLinks = allLinks
+    .map((link) => {
+      try {
+        return new URL(link, domain).href;
+      } catch (e) {
+        return null;
+      }
+    })
+    .filter(
+      (link): link is string =>
+        !!link &&
+        link.startsWith(domain) &&
+        keywords.some((keyword) => link.includes(keyword))
+    );
+
+  let combinedText = "";
+  for (const link of [...new Set(targetLinks)]) {
+    try {
+      const { data: pageHtml } = await axios.get(link);
+      const $$ = load(pageHtml);
+      combinedText += `\n\n--- Content from ${link} ---\n\n${$$("body").text()}`;
+    } catch (error) {
+      // Ignore errors for individual page scrapes, log them if needed
+      console.warn(`Failed to scrape ${link}:`, error);
+    }
+  }
+
+  return combinedText.replace(/\s\s+/g, " ").trim();
+};
+
+  server.tool(
+    "find_and_scrape_pages",
+    "Finds and scrapes specific pages on a website based on keywords",
+    {
+      domain: z.string().url().describe("The base URL of the website to crawl"),
+      keywords: z
+        .array(z.string())
+        .describe(
+          "A list of keywords to find in the URLs (e.g., 'case-study', 'press-release')"
+        ),
+    },
+    async ({ domain, keywords }): Promise<CallToolResult> => {
+      try {
+        const cleanText = await findAndScrape(domain, keywords);
+        return {
+          content: [
+            {
+              type: "text",
+              text: cleanText,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error crawling website: ${error.message}`,
+            },
+          ],
+        };
+      }
     }
   );
 
