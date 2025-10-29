@@ -16,18 +16,16 @@ This site shows a very a basic example of developing and running serverless MCP 
 - [Docs: Netlify Functions](https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-mcp-express)
 - [Agent Experience (AX)](https://agentexperience.ax?utm_source=express-mcp-guide&utm_medium=web&utm_content=example-mcp-express)
 
-## Advanced B2B Outreach Workflow
+## Multi-Step "Account Research & Outreach" Workflow
 
-This example now includes an advanced B2B outreach workflow that leverages the Claude Cookbook methodology. It combines a web scraping tool with a sophisticated, persona-based prompt to generate highly personalized outreach content for various channels.
+This example now includes an advanced, multi-step B2B outreach workflow inspired by the Gemini Cookbook. It chains multiple prompts together to perform research, identify a target persona, and then generate highly personalized outreach content.
 
 **Workflow:**
 
-1.  **`scrape-website` tool:** Use this tool to scrape the text content of a target company's website and your own product's website.
-2.  **`generate-b2b-outreach-content` prompt:** Use the output from the `scrape-website` tool to generate a detailed prompt for an AI to write a personalized B2B outreach message. This prompt accepts the following parameters:
-    *   `targetCompanyInfo`: The text content of the target company's website.
-    *   `ourProductInfo`: Information about your product.
-    *   `buyingGroupPersona`: The persona of the buying group member (e.g., "CTO", "Marketing Manager").
-    *   `channel`: The communication channel for the outreach ("email", "linkedin", or "whatsapp").
+1.  **`scrape-website` tool:** Use this tool to scrape the raw text content of a target company's website.
+2.  **`extract-company-data` prompt:** Take the raw text from the previous step and use this prompt to extract a structured JSON object containing key information about the company.
+3.  **`identify-target-persona` prompt:** Use the JSON object from the previous step, along with your own product info, to get an AI-powered suggestion for the best persona to target.
+4.  **`generate-b2b-outreach-content` prompt:** Use the structured data from step 2 and the suggested persona from step 3 to generate a final, highly personalized outreach message tailored to the specific persona and your chosen channel.
 
 Importantly, because of how Express handles mapping routes, ensure you set the `netlify.toml` redirects to the correct path. In this example we have the following to ensure <domain>/mcp catches all of the requests to this server:
 

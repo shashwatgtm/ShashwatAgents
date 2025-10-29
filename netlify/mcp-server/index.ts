@@ -46,12 +46,109 @@ export const setupMCPServer = (): McpServer => {
   // Register a tool specifically for testing the ability
   // to resume notification streams to the client
   server.prompt(
+    "identify-target-persona",
+    "Identifies the best target persona based on structured company data",
+    {
+      companyData: z
+        .string()
+        .describe(
+          "A JSON string of structured data about the target company"
+        ),
+      ourProductInfo: z
+        .string()
+        .describe("Information about our product"),
+    },
+    async ({
+      companyData,
+      ourProductInfo,
+    }): Promise<GetPromptResult> => {
+      const PROMPT = `
+        **Objective:** Identify the best persona to target for B2B outreach.
+
+        **Our Product Information:**
+        ${ourProductInfo}
+
+        **Target Company Data (JSON):**
+        ${companyData}
+
+        **Instructions:**
+        1.  **Analyze:** Based on our product and the target company's data, determine which persona within the company would be the most receptive to our outreach.
+        2.  **Suggest Persona:** Suggest a single, specific persona (e.g., "CTO", "Lead Developer", "Marketing Manager").
+        3.  **Provide Reasoning:** Briefly explain your choice.
+
+        **Respond with ONLY a valid JSON object in the following format:**
+        {
+          "suggestedPersona": "...",
+          "reasoning": "..."
+        }
+      `;
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: PROMPT,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  server.prompt(
+    "extract-company-data",
+    "Extracts structured data from a company's website text",
+    {
+      companyWebsiteText: z
+        .string()
+        .describe("The text content of the target company's website"),
+    },
+    async ({ companyWebsiteText }): Promise<GetPromptResult> => {
+      const PROMPT = `
+        **Objective:** Extract structured data from the following company website text.
+
+        **Website Text:**
+        ${companyWebsiteText}
+
+        **Instructions:**
+        Analyze the text and extract the following information. Respond with ONLY a valid JSON object.
+        - **industry:** The primary industry the company operates in.
+        - **keyProducts:** A list of the company's main products or services.
+        - **recentInitiatives:** Any recent news, blog posts, or initiatives mentioned.
+        - **targetAudience:** The likely target audience for their products/services.
+
+        **JSON Output Format:**
+        {
+          "industry": "...",
+          "keyProducts": ["...", "..."],
+          "recentInitiatives": ["...", "..."],
+          "targetAudience": "..."
+        }
+      `;
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: PROMPT,
+            },
+          },
+        ],
+      };
+    }
+  );
+
+  server.prompt(
     "generate-b2b-outreach-content",
     "Generates personalized B2B outreach content for a specific persona and channel",
     {
       targetCompanyInfo: z
         .string()
-        .describe("The text content of the target company's website"),
+        .describe(
+          "A JSON string of structured data about the target company"
+        ),
       ourProductInfo: z
         .string()
         .describe("Information about our product from our website"),
