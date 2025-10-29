@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import axios from "axios";
+import { load } from "cheerio";
 import {
   CallToolResult,
   GetPromptResult,
@@ -44,23 +46,82 @@ export const setupMCPServer = (): McpServer => {
   // Register a tool specifically for testing the ability
   // to resume notification streams to the client
   server.prompt(
-    "farewell-template",
-    "A simple farewell prompt template",
+    "generate-abm-email-prompt",
+    "Generates a prompt for a personalized B2B ABM email",
     {
-      name: z.string().describe("Name to include in farewell"),
+      companyWebsiteText: z
+        .string()
+        .describe("The text content of the target company's website"),
+      ourProductInfo: z
+        .string()
+        .describe("Information about our product"),
     },
-    async ({ name }): Promise<GetPromptResult> => {
+    async ({
+      companyWebsiteText,
+      ourProductInfo,
+    }): Promise<GetPromptResult> => {
+      const PROMPT = `
+        Based on the following information about a target company (scraped from their website)
+        and our product, please generate a personalized B2B account-based marketing email.
+
+        **Target Company Information:**
+        ${companyWebsiteText}
+
+        **Our Product Information:**
+        ${ourProductInfo}
+
+        **Instructions:**
+        1. Start with a personalized opening that references something specific from the company's website.
+        2. Clearly and concisely introduce our product and its key value proposition.
+        3. Connect our product's features to the company's needs, based on the information provided.
+        4. End with a clear call to action, suggesting a next step (e.g., a brief call, a demo).
+        5. Keep the tone professional, respectful, and tailored to a B2B audience.
+      `;
       return {
         messages: [
           {
             role: "user",
             content: {
               type: "text",
-              text: `Please say goodbye to ${name} in a friendly manner.`,
+              text: PROMPT,
             },
           },
         ],
       };
+    }
+  );
+
+  server.tool(
+    "scrape-website",
+    "Scrapes a website and returns the text content",
+    {
+      url: z.string().url().describe("The URL to scrape"),
+    },
+    async ({ url }): Promise<CallToolResult> => {
+      try {
+        const { data } = await axios.get(url);
+        const $ = load(data);
+        const text = $("body").text();
+        // simple text cleaning
+        const cleanText = text.replace(/\s\s+/g, " ").trim();
+        return {
+          content: [
+            {
+              type: "text",
+              text: cleanText,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error scraping website: ${error.message}`,
+            },
+          ],
+        };
+      }
     }
   );
 
