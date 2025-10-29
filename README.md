@@ -16,14 +16,18 @@ This site shows a very a basic example of developing and running serverless MCP 
 - [Docs: Netlify Functions](https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-mcp-express)
 - [Agent Experience (AX)](https://agentexperience.ax?utm_source=express-mcp-guide&utm_medium=web&utm_content=example-mcp-express)
 
-## B2B Account-Based Marketing (ABM) Workflow
+## Advanced B2B Outreach Workflow
 
-This example now includes a powerful B2B ABM workflow that leverages the Claude Cookbook methodology. It combines a web scraping tool with a sophisticated prompt to generate highly personalized outreach emails.
+This example now includes an advanced B2B outreach workflow that leverages the Claude Cookbook methodology. It combines a web scraping tool with a sophisticated, persona-based prompt to generate highly personalized outreach content for various channels.
 
 **Workflow:**
 
-1.  **`scrape-website` tool:** Use this tool to scrape the text content of a target company's website.
-2.  **`generate-abm-email-prompt` prompt:** Use the output from the `scrape-website` tool, along with your own product information, to generate a detailed prompt for an AI to write a personalized B2B ABM email.
+1.  **`scrape-website` tool:** Use this tool to scrape the text content of a target company's website and your own product's website.
+2.  **`generate-b2b-outreach-content` prompt:** Use the output from the `scrape-website` tool to generate a detailed prompt for an AI to write a personalized B2B outreach message. This prompt accepts the following parameters:
+    *   `targetCompanyInfo`: The text content of the target company's website.
+    *   `ourProductInfo`: Information about your product.
+    *   `buyingGroupPersona`: The persona of the buying group member (e.g., "CTO", "Marketing Manager").
+    *   `channel`: The communication channel for the outreach ("email", "linkedin", or "whatsapp").
 
 Importantly, because of how Express handles mapping routes, ensure you set the `netlify.toml` redirects to the correct path. In this example we have the following to ensure <domain>/mcp catches all of the requests to this server:
 

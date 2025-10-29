@@ -46,36 +46,49 @@ export const setupMCPServer = (): McpServer => {
   // Register a tool specifically for testing the ability
   // to resume notification streams to the client
   server.prompt(
-    "generate-abm-email-prompt",
-    "Generates a prompt for a personalized B2B ABM email",
+    "generate-b2b-outreach-content",
+    "Generates personalized B2B outreach content for a specific persona and channel",
     {
-      companyWebsiteText: z
+      targetCompanyInfo: z
         .string()
         .describe("The text content of the target company's website"),
       ourProductInfo: z
         .string()
-        .describe("Information about our product"),
+        .describe("Information about our product from our website"),
+      buyingGroupPersona: z
+        .string()
+        .describe(
+          "The persona of the buying group member (e.g., CTO, Marketing Manager)"
+        ),
+      channel: z
+        .enum(["email", "linkedin", "whatsapp"])
+        .describe("The communication channel for the outreach"),
     },
     async ({
-      companyWebsiteText,
+      targetCompanyInfo,
       ourProductInfo,
+      buyingGroupPersona,
+      channel,
     }): Promise<GetPromptResult> => {
       const PROMPT = `
-        Based on the following information about a target company (scraped from their website)
-        and our product, please generate a personalized B2B account-based marketing email.
+        **Objective:** Generate a personalized B2B outreach message.
 
-        **Target Company Information:**
-        ${companyWebsiteText}
-
-        **Our Product Information:**
-        ${ourProductInfo}
+        **Context:**
+        - **Our Product:** ${ourProductInfo}
+        - **Target Company:** ${targetCompanyInfo}
+        - **Target Persona:** ${buyingGroupPersona}
+        - **Channel:** ${channel}
 
         **Instructions:**
-        1. Start with a personalized opening that references something specific from the company's website.
-        2. Clearly and concisely introduce our product and its key value proposition.
-        3. Connect our product's features to the company's needs, based on the information provided.
-        4. End with a clear call to action, suggesting a next step (e.g., a brief call, a demo).
-        5. Keep the tone professional, respectful, and tailored to a B2B audience.
+        1.  **Synthesize:** Read and understand both our product information and the target company's information. Identify potential synergies, pain points, and value propositions.
+        2.  **Personalize for Persona:** Tailor the message specifically for the **${buyingGroupPersona}**.
+            *   If they are technical (e.g., CTO, Lead Developer), focus on technical benefits, integration, and efficiency gains.
+            *   If they are business-focused (e.g., Marketing Manager, CEO), focus on ROI, market advantage, and strategic value.
+        3.  **Adapt for Channel (${channel}):**
+            *   **Email:** Professional, well-structured, with a clear subject line, introduction, value proposition, and call to action. Keep it concise (3-4 short paragraphs).
+            *   **LinkedIn:** Slightly more conversational. Start with a hook related to a shared connection or a recent company post. Keep it shorter than an email. End with a soft call to action, like "Would you be open to connecting?"
+            *   **WhatsApp:** Very informal and direct. Use this only if a prior connection exists. The message should be very short, reference a specific, timely event, and ask a direct question.
+        4.  **Generate Content:** Based on the above, generate the outreach message.
       `;
       return {
         messages: [
