@@ -8,40 +8,36 @@
 
 ## About this example site
 
-This site shows a very a basic example of developing and running serverless MCP using Netlify Functions. It includes links to a deployed serverless function and an example of accessing the function using a customized URL.
+This site showcases an advanced B2B research agent. The agent can perform a deep, multi-step analysis of a company in a single call, synthesizing information from a company's website into a comprehensive, actionable report.
 
 - [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [Docs: Netlify Functions](https://docs.netlify.com/functions/overview/?utm_campaign=dx-examples&utm_source=example-site&utm_medium=web&utm_content=example-mcp-express)
 - [Agent Experience (AX)](https://agentexperience.ax?utm_source=express-mcp-guide&utm_medium=web&utm_content=example-mcp-express)
 
-## "Corporate Intelligence" Workflow
+## "Deep B2B Research" Workflow
 
-This example now includes a powerful, single-call "Corporate Intelligence" workflow. This workflow takes a company's domain as input, crawls the website for relevant pages (case studies, press releases, etc.), and then returns a structured JSON object containing a deep analysis of the company's value proposition, reasons to believe, jobs to be done, and ABM triggers.
-
-**Workflow:**
-
-1.  **`corporate_intelligence_report` prompt:** Use this prompt with a company's domain to get a comprehensive, AI-powered corporate intelligence report.
-
-## Multi-Step "Account Research & Outreach" Workflow (Legacy)
-
-This example also includes a legacy, multi-step B2B outreach workflow inspired by the Gemini Cookbook. It chains multiple prompts together to perform research, identify a target persona, and then generate highly personalized outreach content.
+The agent's primary workflow is the `deep_b2b_research` prompt. This powerful, "one-shot" prompt performs a complete B2B research task, from initial scraping to final analysis, in a single invocation.
 
 **Workflow:**
+1.  **Crawl & Scrape:** The agent crawls the target company's website, looking for pages with keywords like "case-study," "press-release," etc.
+2.  **Extract Intelligence:** It then analyzes the scraped content to extract a structured JSON object containing the company's value proposition, reasons to believe, jobs to be done, and ABM triggers.
+3.  **Synthesize Report:** Finally, it synthesizes this structured data into a comprehensive, markdown-formatted report.
 
-1.  **`scrape-website` tool:** Use this tool to scrape the raw text content of a target company's website.
-2.  **`extract-company-data` prompt:** Take the raw text from the previous step and use this prompt to extract a structured JSON object containing key information about the company.
-3.  **`identify-target-persona` prompt:** Use the JSON object from the previous step, along with your own product info, to get an AI-powered suggestion for the best persona to target.
-4.  **`generate-b2b-outreach-content` prompt:** Use the structured data from step 2 and the suggested persona from step 3 to generate a final, highly personalized outreach message tailored to the specific persona and your chosen channel.
+**Example Interaction:**
+1. **User:** "Please begin your research on Acme Corp (domain: acme.com)."
+2. **Agent:** Returns a complete, markdown-formatted report:
+   -   **Value Proposition:** What is their core offering?
+   -   **Reasons to Believe:** What evidence supports their claims?
+   -   **Jobs to be Done:** What problems do they solve for their customers?
+   -   **ABM Triggers:** What recent events make them a good target for outreach?
+   -   **Overall Summary:** A brief, high-level summary of the company.
 
-Importantly, because of how Express handles mapping routes, ensure you set the `netlify.toml` redirects to the correct path. In this example we have the following to ensure <domain>/mcp catches all of the requests to this server:
+## Other Workflows and Tools
 
-```toml
-[[redirects]]
-  force = true
-  from = "/mcp"
-  status = 200
-  to = "/.netlify/functions/express-mcp-server"
-```
+The agent also has a number of other tools and workflows that can be used independently or as part of a larger task.
+
+### "Corporate Intelligence" Workflow
+- **`corporate_intelligence_report` prompt:** A single-call workflow that takes a company's domain, crawls its website for relevant pages, and returns a structured JSON object with a deep analysis of the company's value proposition, reasons to believe, jobs to be done, and ABM triggers.
 
 ## Speedily deploy your own version
 
